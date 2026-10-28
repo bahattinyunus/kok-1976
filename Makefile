@@ -9,6 +9,7 @@ SRCS = core/src/math.cpp \
        core/src/crypto.cpp \
        radio/modulation/fsk.cpp \
        radio/modulation/fhss.cpp \
+       radio/modulation/dsss.cpp \
        radio/telemetry/frame.cpp \
        radio/telemetry/protocol.cpp
 

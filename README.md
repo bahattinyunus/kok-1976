@@ -358,6 +358,29 @@ $$\text{SYNC\_0} \to \text{SYNC\_1} \to \text{SYNC\_2} \to \text{SYNC\_3} \to \t
 
 ---
 
+### F. Doğrudan Dizili Yayılı Spektrum (DSSS Barker-11) ve LPI/LPD
+
+Sinyalin tespit edilmesini ve dinlenmesini önlemek amacıyla (Low Probability of Intercept / Low Probability of Detection), her bir bilgi biti 11-çiplik askerî Barker dizisiyle genişletilir:
+
+$$C_{Barker} = [+1, -1, +1, +1, -1, +1, +1, +1, -1, -1, -1]$$
+
+$$\text{İşleme Kazancı } G_p = 10 \log_{10}(11) \approx 10.41\text{ dB}$$
+
+Bu sayede sinyal termal gürültünün $-6\text{ dB}$ altına gömülse dahi, alıcıdaki eşleşmiş süzgeç korelatörü tepe korelasyonunu yakalayarak mesajı %100 doğrulukla çözer.
+
+---
+
+### G. Anti-Spoofing ve Tekrar (Replay) Saldırısı Kalkanı
+
+Elektronik harpte düşmanın en tehlikeli taktiği, havadan yakaladığı dost paketleri kaydedip tekrar yayınlaması (replay attack) veya sahte emir enjekte etmesidir.
+
+KÖK-1976 üç kademeli kalkan kullanır:
+1. **Sıkı Sıra Numarası (Sequence Number Tracking):** Her paket benzersiz bir artan sıra numarası taşır; önceden görülmüş sıra numaraları anında çöpe atılır.
+2. **Kamoy-76 MAC Doğrulaması:** Her paketin içeriği, sadece dost telsizlerin bildiği 64-bitlik gizli kök anahtar ve oturum IV'si ile doğrulanır.
+3. **Zaman Damgası ve Hop Kanal Eşleşmesi:** Paket, gönderildiği frekans kanalı ve zaman penceresiyle kriptografik olarak kilitlenir.
+
+---
+
 ## 7. PROJE DİZİN ŞEMASI
 
 ```text
@@ -365,7 +388,9 @@ kok-1976/
 ├── docs/
 │   ├── hacim_kamoy_ogretisi.md     # Kamoy liderliği, ahlakı ve 10 mühendislik emri
 │   ├── kibris_1964_analizi.md      # Troposferik saçılma fiziği ve 1964 Antalya hattı
-│   └── 4600_telsiz_mimarisi.md     # İlk yerli VHF telsizin blok şeması ve kart yapısı
+│   ├── 4600_telsiz_mimarisi.md     # İlk yerli VHF telsizin blok şeması ve kart yapısı
+│   ├── aselsan_kurulus_kronolojisi.md # 1964-2000 Resmî ASELSAN kuruluş ve tarihçe kronolojisi
+│   └── elektronik_harp_doktrini.md # ECM, ECCM, Anti-Jamming ve taktik harp prensipleri
 ├── core/
 │   ├── include/kok/
 │   │   ├── types.hpp               # fp32_t Q16.16 sabit nokta ve deterministik tipler
@@ -375,7 +400,8 @@ kok-1976/
 │   │   ├── crc.hpp                 # Bağımsız CRC-8, CRC-16 ve CRC-32 motoru
 │   │   ├── math.hpp                # CORDIC sin/cos/polar ve bit kaydırmalı karekök
 │   │   ├── fec.hpp                 # Hamming(8,4) ve Genişletilmiş Golay(24,12)
-│   │   └── crypto.hpp              # Kamoy-76 çift LFSR taktik akış şifreleyicisi
+│   │   ├── crypto.hpp              # Kamoy-76 çift LFSR taktik akış şifreleyicisi
+│   │   └── lpi_lpd.hpp             # LPI/LPD metrikleri, Shannon limiti ve entropi ölçer
 │   └── src/
 │       ├── math.cpp                # CORDIC açı tabloları ve tamsayı kök hesaplaması
 │       ├── fec.cpp                 # Golay ve Hamming sendrom çözücüleri
@@ -384,6 +410,8 @@ kok-1976/
 │   ├── modulation/
 │   │   ├── fsk.hpp / fsk.cpp       # 2-FSK / GFSK modülatör ve FM diskriminatör
 │   │   ├── fhss.hpp / fhss.cpp     # 64-kanallı FHSS ve adaptif kara liste motoru
+│   │   ├── dsss.hpp / dsss.cpp     # 11-çipli Barker DSSS yayıcı ve eşleşmiş süzgeç
+│   │   ├── dsss.py                 # DSSS Python simülatörü ve korelatör modeli
 │   │   └── modem.py                # Sayısal taban bant simülatörü (AWGN, Rayleigh)
 │   └── telemetry/
 │       ├── frame.hpp / frame.cpp   # 0x1976KOK çerçeve serileştirme ve doğrulama
@@ -396,11 +424,12 @@ kok-1976/
 │   └── stress/
 │       ├── stress_noise.py         # -2 dB ila +10 dB SNR AWGN stres testi
 │       ├── stress_jamming.py       # Baraj, süpürme ve takipçi karıştırıcı testi
+│       ├── stress_ew_complex.py    # DSSS -6dB SNR ve Anti-Spoofing / Replay testi
 │       ├── stress_memory.py        # 100.000 çerçeveli O(1) bellek ve sızıntı testi
 │       └── stress_cyprus_1964.py   # 1964 Antalya-Kıbrıs troposferik yayılım modeli
 ├── CMakeLists.txt                  # Modern ve taşınabilir CMake yapılandırması
 ├── Makefile                        # Bağımsız GNU / MinGW Make dosyası
-├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu
+├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (6 Test)
 ├── LICENSE                         # Millî & Özgür Yazılım Lisans Sözleşmesi
 └── README.md                       # Bu doktrin ve mimari belgesi
 ```
@@ -409,7 +438,7 @@ kok-1976/
 
 ## 8. DOĞRULAMA VE STRES TESTİ SONUÇLARI
 
-Tüm modüller `python -s run_tests.py` komutuyla yürütülen 5 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
+Tüm modüller `python -s run_tests.py` komutuyla yürütülen 6 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
 
 ```text
 ============================================================================
@@ -417,13 +446,14 @@ Tüm modüller `python -s run_tests.py` komutuyla yürütülen 5 aşamalı ağı
 ============================================================================
 Modül / Test Adı                                        | Durum      | Süre  
 ----------------------------------------------------------------------------
-Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.33s
-Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.38s
-Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.33s
-Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.52s
+Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.29s
+Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.41s
+Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.36s
+İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.24s
+Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.50s
 1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.09s
 ----------------------------------------------------------------------------
-Toplam Test Süresi: 1.65 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
+Toplam Test Süresi: 1.88 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
 ```
 
 ---

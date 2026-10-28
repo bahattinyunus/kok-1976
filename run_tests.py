@@ -28,6 +28,7 @@ TEST_SUITES = [
     ("Birim Testler (CRC, FEC, Ciphers, Framing)", ["python", "-s", "tests/test_core.py"]),
     ("Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)", ["python", "-s", "tests/stress/stress_noise.py"]),
     ("Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)", ["python", "-s", "tests/stress/stress_jamming.py"]),
+    ("İleri Düzey EH, DSSS & Anti-Spoofing Savunması", ["python", "-s", "tests/stress/stress_ew_complex.py"]),
     ("Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)", ["python", "-s", "tests/stress/stress_memory.py"]),
     ("1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı", ["python", "-s", "tests/stress/stress_cyprus_1964.py"]),
 ]

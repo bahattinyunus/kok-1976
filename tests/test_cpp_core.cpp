@@ -10,8 +10,10 @@
 #include "kok/crc.hpp"
 #include "kok/fec.hpp"
 #include "kok/crypto.hpp"
+#include "kok/lpi_lpd.hpp"
 #include "fsk.hpp"
 #include "fhss.hpp"
+#include "dsss.hpp"
 #include "frame.hpp"
 #include "protocol.hpp"
 
@@ -134,7 +136,7 @@ void test_crc_and_fec() {
 }
 
 void test_crypto_and_fhss() {
-    std::cout << "[+] Test Ediliyor: Kamoy-76 Kripto Akışı ve FHSS..." << std::endl;
+    std::cout << "[+] Test Ediliyor: Kamoy-76 Kripto Akışı, DSSS ve FHSS..." << std::endl;
 
     cipher c1(0x1976A5A51976A5A5ULL, 0x00000042);
     cipher c2(0x1976A5A51976A5A5ULL, 0x00000042);
@@ -149,6 +151,23 @@ void test_crypto_and_fhss() {
 
     c2.process(encrypted, slen);
     assert(std::memcmp(secret_msg, encrypted, slen) == 0);
+
+    // DSSS Barker-11 Testi
+    const u8 dsss_raw[] = {0xA5, 0x5A};
+    i8 spread_chips[16 * dsss_engine::CHIPS_PER_BIT];
+    usize num_chips = dsss_engine::spread_bytes(dsss_raw, 2, spread_chips, sizeof(spread_chips));
+    assert(num_chips == 16 * 11);
+
+    u8 recovered_dsss[4] = {0};
+    usize rec_bytes = dsss_engine::despread_chips(spread_chips, num_chips, recovered_dsss, sizeof(recovered_dsss));
+    assert(rec_bytes == 2);
+    assert(recovered_dsss[0] == 0xA5 && recovered_dsss[1] == 0x5A);
+
+    // LPI/LPD Metrikleri Testi
+    float gp = lpi_lpd::calculate_processing_gain_db(250000.0f, 2400.0f);
+    assert(gp > 15.0f && gp < 25.0f);
+    float jm = lpi_lpd::calculate_jamming_margin_db(gp, 6.0f);
+    assert(jm > 0.0f);
 
     // FHSS Testi
     fhss_engine fhss(0x1976A5A51976A5A5ULL, 16);
