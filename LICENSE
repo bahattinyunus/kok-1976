@@ -1,0 +1,36 @@
+KÖK 1976 MİLLÎ VE ÖZGÜR YAZILIM LİSANSI
+(KOK-1976 Sovereign & Open Engineering License)
+
+Telif Hakkı (c) 1976-2026 KÖK 1976 Proje İştirakçileri ve Bağımsız Türk Mühendisleri.
+
+Bu yazılım ve ilgili dokümantasyon dosyaları ("Yazılım"), aşağıdaki ilkelere ve
+şartlara bağlı kalınması kaydıyla herhangi bir kısıtlama olmaksızın ücretsiz olarak
+herkesin kullanımına sunulmuştur:
+
+1. TAM BAĞIMSIZLIK VE MİLLÎ EGEMENLİK İLKESİ:
+   Yazılım; herhangi bir yabancı ambargoya, kapalı kutu lisanslama kısıtına,
+   uzaktan erişimli telemetriye veya harici servis bağımlılığına tabi tutulamaz.
+   Kaynak kodlar her daim açık, incelenebilir, yalın ve yerli imkanlarla
+   derlenebilir kalacaktır.
+
+2. MÜHENDİSLİK AHLAKI VE KAMOY DOKTRİNİ:
+   Bu kod tabanından yararlanan her mühendis ve araştırmacı; milletin emanet ettiği
+   kaynakları israf etmemeyi, montajcılık yerine özgün tasarım ve tabandan geliştirme
+   (bare-metal) ilkesini korumayı, en zorlu fiziksel ve elektronik koşullarda
+   (düşük SNR, karıştırma, bellek kısıtı) dayanıklı sistemler inşa etmeyi taahhüt eder.
+
+3. KULLANIM VE DAĞITIM HAKLARI:
+   İşbu Yazılımı kullanma, kopyalama, değiştirme, birleştirme, yayımlama, dağıtma,
+   alt lisanslama ve/veya satma hakkı; yukarıdaki telif hakkı bildiriminin ve bu izin
+   metninin Yazılımın tüm kopyalarına veya önemli bölümlerine dahil edilmesi koşuluyla
+   herkese tanınmıştır.
+
+4. SORUMSUZLUK ŞERHİ:
+   BU YAZILIM "OLDUĞU GİBİ" ESASIYLA SUNULMUŞTUR. TİCARETE ELVERİŞLİLİK, BELİRLİ BİR
+   AMACA UYGUNLUK VE İHLAL ETMEME GARANTİLERİ DAHİL ANCAK BUNLARLA SINIRLI OLMAMAK
+   ÜZERE AÇIK VEYA ZIMNİ HİÇBİR GARANTİ VERİLMEMEKTEDİR. YAZARLAR VEYA TELİF HAKKI
+   SAHİPLERİ, YAZILIMIN KULLANIMINDAN VEYA YAZILIMLA İLGİLİ DİĞER İŞLEMLERDEN DOĞACAK
+   HİÇBİR TALEP, TAZMİNAT VEYA DİĞER YÜKÜMLÜLÜKLERDEN SORUMLU TUTULAMAZ.
+
+"Milli servetin heba edilmediği, kendi telsizini ve algoritmasını kendi üreten
+bağımsız bir gelecek idealiyle..."
