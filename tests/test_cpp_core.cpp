@@ -20,6 +20,8 @@
 #include "squelch.hpp"
 #include "mesh_router.hpp"
 #include "dsp_filter.hpp"
+#include "direction_finder.hpp"
+#include "tdma.hpp"
 
 using namespace kok;
 using namespace kok::radio;
@@ -266,6 +268,58 @@ void test_audio_dsp_and_mesh() {
     assert(fwd_pkt.header().target_id == 5);
 }
 
+void test_rdf_and_tdma() {
+    std::cout << "[+] Test Ediliyor: Radyo Yön Bulucu (RDF) ve Taktik TDMA..." << std::endl;
+
+    // 1. Watson-Watt Yön Bulucu Testi
+    direction_finder df;
+    // Hedef: Kuzey-Doğu yönünde (45 derece)
+    // V_ns ~ cos(45) ≈ 0.707, V_ew ~ sin(45) ≈ 0.707, V_sense = 1.0
+    fp32_t v_ns = fp32_t::from_float(0.707f);
+    fp32_t v_ew = fp32_t::from_float(0.707f);
+    fp32_t v_sense = fp32_t::from_float(1.0f);
+
+    for (usize i = 0; i < 16; ++i) {
+        df.feed_sample(v_ns, v_ew, v_sense);
+    }
+    direction_finder::bearing_result b_res = df.calculate_bearing();
+    assert(b_res.valid);
+    float az = b_res.azimuth_deg.to_float();
+    assert(az >= 40.0f && az <= 50.0f); // 45 derece civarında
+
+    // İki istasyon kerteriz kesişimi (Triangulation) testi
+    fp32_t tx1 = fp32_t::from_float(0.0f);
+    fp32_t ty1 = fp32_t::from_float(0.0f);
+    fp32_t theta1 = fp32_t::from_float(45.0f);
+
+    fp32_t tx2 = fp32_t::from_float(10.0f);
+    fp32_t ty2 = fp32_t::from_float(0.0f);
+    fp32_t theta2 = fp32_t::from_float(315.0f);
+
+    fp32_t target_x, target_y;
+    bool tri_ok = direction_finder::triangulate_target(tx1, ty1, theta1, tx2, ty2, theta2, target_x, target_y);
+    assert(tri_ok);
+    assert(target_x.to_float() >= 4.8f && target_x.to_float() <= 5.2f);
+    assert(target_y.to_float() >= 4.8f && target_y.to_float() <= 5.2f);
+
+    // 2. TDMA Çizelgeleyici Testi
+    tdma_scheduler scheduler(2); // Düğüm ID: 2
+    scheduler.assign_transmit_slot(5); // 5. slot tahsisli
+
+    // Slot 0 senkron slotudur
+    assert(scheduler.current_slot() == 0);
+    assert(scheduler.current_slot_type() == tdma_scheduler::slot_type::BROADCAST_SYNC);
+
+    // Zamanı 5 slot ilerlet (5 * 7812 us)
+    scheduler.advance_tick(5 * tdma_scheduler::SLOT_DURATION_US);
+    assert(scheduler.current_slot() == 5);
+    assert(scheduler.current_slot_type() == tdma_scheduler::slot_type::TRANSMIT_ASSIGNED);
+
+    // Doğrulama denetimi: 2. düğüm bu slotun sahibidir
+    assert(scheduler.validate_slot_ingress(2));
+    assert(!scheduler.validate_slot_ingress(9)); // 9. düğüm konuşamaz
+}
+
 int main() {
     std::cout << "============================================================" << std::endl;
     std::cout << "  KOK-1976 C++ CEKIRDEK BIRIM VE DOKTRIN TESTLERI (C++17)   " << std::endl;
@@ -277,6 +331,7 @@ int main() {
     test_crypto_and_fhss();
     test_telemetry_and_stream();
     test_audio_dsp_and_mesh();
+    test_rdf_and_tdma();
 
     std::cout << "============================================================" << std::endl;
     std::cout << "  TUM C++ CEKIRDEK TESTLERI BASARIYLA TAMAMLANDI! (OK)      " << std::endl;

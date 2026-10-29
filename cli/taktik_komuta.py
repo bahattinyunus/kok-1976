@@ -19,6 +19,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from tests.kok_core import KamoyCipher, golay24_encode, golay24_decode
 from radio.telemetry.telemetry import TacticalFrame, StreamReceiver
 from radio.modulation.dsss import DSSSEngine
+from radio.sdr.df import WatsonWattDirectionFinder
+from radio.network.tactical_link import TacticalDataLinkNetwork
 
 
 BANNER = r"""
@@ -90,6 +92,30 @@ def run_demo():
     print(f"[*] Giriş Bitleri: {bits}")
     print(f"[*] 11-Çipli Barker Spektrumu ({len(chips)} çip): {list(chips[:22])} ...")
     print(f"[*] Düşük Yakalanma Olasılığı (LPI/LPD) Kazancı: {DSSSEngine.calculate_processing_gain_db():.2f} dB")
+
+    print("\n>>> SENARYO 4: Elektronik Harp Kestirimi (RDF) & Düşman Jammer Tespiti...")
+    st1 = WatsonWattDirectionFinder(1, 0.0, 0.0)
+    st2 = WatsonWattDirectionFinder(2, 50.0, 0.0)
+    st1.simulate_emitter_signal(20.0, 60.0, snr_db=18.0, num_samples=64)
+    st2.simulate_emitter_signal(20.0, 60.0, snr_db=18.0, num_samples=64)
+    deg1, conf1, _ = st1.calculate_bearing()
+    deg2, conf2, _ = st2.calculate_bearing()
+    est = WatsonWattDirectionFinder.triangulate(st1, deg1, st2, deg2)
+    print(f"[*] İstasyon 1 (Antalya) Kerterizi: {deg1:.1f}° (Güven: %{conf1*100:.0f})")
+    print(f"[*] İstasyon 2 (Alanya) Kerterizi : {deg2:.1f}° (Güven: %{conf2*100:.0f})")
+    if est:
+        print(f"[+] Düşman Jammer Koordinatı Kestirildi: X = {est[0]:.2f} km, Y = {est[1]:.2f} km (Hedef Kilitlendi)")
+
+    print("\n>>> SENARYO 5: Taktik TDMA Veri Bağı & Blue Force Tracking (BFT)...")
+    net = TacticalDataLinkNetwork()
+    net.add_node(0x01, "KARTAL-1 (Karargah)", slot=1, x=0.0, y=0.0).is_synced = True
+    net.add_node(0x02, "PARS-2 (Tank)", slot=5, x=15.0, y=10.0).is_synced = True
+    net.add_node(0x03, "BOZKURT-3 (Piyade)", slot=10, x=22.0, y=18.0).is_synced = True
+    sim_res = net.run_epoch_simulation(duration_epochs=2)
+    print(f"[*] 2 TDMA Çağında (1000 ms) Toplanan BFT Raporu: {sim_res['successful_bft_reports']}")
+    print(f"[*] Slot Çatışması (Collisions): {sim_res['collisions']} (Sıfır Çatışma Determinizmi)")
+    for nid, bft in sim_res['bft_map'].items():
+        print(f"    [BFT MEVZİ] {bft['callsign']:22s} -> X={bft['pos_x']:4.1f}km, Y={bft['pos_y']:4.1f}km | Yakıt=%{bft['fuel']} Mühimmat=%{bft['ammo']}")
 
     print("\n" + "=" * 76)
     print("  [DEMO TAMAMLANDI] KÖK-1976 Taktik Muhabere Sistemi Harbe Hazır!")

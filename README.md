@@ -424,6 +424,24 @@ Fiziksel radyo katmanında semboller arası girişimi (ISI) sıfıra indirmek ve
 
 ---
 
+### K. Taktik Radyo Yön Bulucu (Watson-Watt RDF) ve Kerteriz Kestirimi (Triangulation)
+
+Elektronik destek ve karşı tedbir (ESM/ECCM) kapsamında düşman jammer ve vericilerinin coğrafi yerini tespit eden kestirme motoru:
+* **4-Elemanlı Adcock Anten Dizisi:** Dikey polarizasyonlu dalgaları toplayarak gökyüzü hatasını (skywave night-effect) sıfırlar.
+* **Sense Anteni ile Koherent Çarpım:** $\langle V_{NS}, V_{Sense} \rangle$ ve $\langle V_{EW}, V_{Sense} \rangle$ skaler çarpımı ile $180^\circ$ ön-arka açı belirsizliği kesin olarak çözülür.
+* **İki/Üç İstasyonlu Üçgenleme (Triangulation):** 50 km taban mesafeli iki istasyon kerterizini kesiştirerek 60 km mesafedeki düşman hedefini $<0.5\text{ km}$ hata çemberiyle tespit eder.
+
+---
+
+### L. Millî Taktik Veri Bağı (Link-Kamoy) ve TDMA Determinizmi
+
+NATO Link-11 ve Link-16 standartlarının ötesinde bağımsız C++17 freestanding deterministik slot mimarisi:
+* **64-Slotluk TDMA Çerçevesi:** Slot başına $7.8125\text{ ms}$ ile saniyede 2 tam çağ (500 ms Epoch) döngüsü.
+* **Blue Force Tracking (BFT):** Her birliğin konum, yakıt ve mühimmat telemetrisi sıfır çatışma garantisiyle (%0 Collision) tüm ağa anında dağıtılır.
+* **Geç Katılım (Late-Net Entry - LNE):** Savaşa sonradan katılan birimler Slot 0 Master senkron darbesiyle saatini 1 çağ içinde kilitler.
+
+---
+
 ## 7. PROJE DİZİN ŞEMASI
 
 ```text
@@ -435,7 +453,9 @@ kok-1976/
 │   ├── aselsan_kurulus_kronolojisi.md # 1964-2000 Resmî ASELSAN kuruluş ve tarihçe kronolojisi
 │   ├── elektronik_harp_doktrini.md # ECM, ECCM, Anti-Jamming ve taktik harp prensipleri
 │   ├── taktik_vocoder_ve_ses_sikistirma.md # 16 kbps CVSD vocoder ve 150 Hz Goertzel susturma
-│   └── taktik_mesh_ve_rolemimarisi.md     # Dağlık saha MANET mesh ve çok sıçramalı röleleme
+│   ├── taktik_mesh_ve_rolemimarisi.md     # Dağlık saha MANET mesh ve çok sıçramalı röleleme
+│   ├── taktik_yon_bulma_ve_kestirme.md    # Watson-Watt Adcock yön bulma ve hedef üçgenleme
+│   └── tdma_ve_taktik_veri_bagi.md        # Deterministik TDMA, Blue Force Tracking ve LNE
 ├── core/
 │   ├── include/kok/
 │   │   ├── types.hpp               # fp32_t Q16.16 sabit nokta ve deterministik tipler
@@ -456,9 +476,13 @@ kok-1976/
 │   │   ├── cvsd.hpp / cvsd.cpp     # 16 kbps CVSD taktik ses sıkıştırma ve hece süzgeci
 │   │   └── squelch.hpp / squelch.cpp # 150 Hz Goertzel DFT askerî CTCSS ton susturma
 │   ├── network/
-│   │   └── mesh_router.hpp / mesh_router.cpp # MANET çok sıçramalı röle ve dedüplikasyon
+│   │   ├── mesh_router.hpp / mesh_router.cpp # MANET çok sıçramalı röle ve dedüplikasyon
+│   │   ├── tdma.hpp / tdma.cpp     # 64-slotluk deterministik TDMA çizelgeleyici
+│   │   └── tactical_link.py        # Blue Force Tracking ve Late-Net Entry simülatörü
 │   ├── sdr/
-│   │   └── dsp_filter.hpp / dsp_filter.cpp   # 31-tap RRC darbe şekillendirici ve NCO
+│   │   ├── dsp_filter.hpp / dsp_filter.cpp   # 31-tap RRC darbe şekillendirici ve NCO
+│   │   ├── direction_finder.hpp / cpp        # Watson-Watt Adcock kerteriz ve kestirme
+│   │   └── df.py                   # Sayısal RDF ve üçgenleme Python modeli
 │   ├── modulation/
 │   │   ├── fsk.hpp / fsk.cpp       # 2-FSK / GFSK modülatör ve FM diskriminatör
 │   │   ├── fhss.hpp / fhss.cpp     # 64-kanallı FHSS ve adaptif kara liste motoru
@@ -470,7 +494,7 @@ kok-1976/
 │       ├── protocol.hpp / protocol.cpp # Akış ayrıştırıcı durum makinesi (Stream Receiver)
 │       └── telemetry.py            # Çift yönlü taktik paket ayrıştırıcı ve logger
 ├── cli/
-│   └── taktik_komuta.py            # İnteraktif taktik harekât ve muhabere konsolu
+│   └── taktik_komuta.py            # BFT, RDF ve telemetri destekli komuta konsolu
 ├── tests/
 │   ├── kok_core.py                 # C++ çekirdeği ile bit uyumlu Python referansı
 │   ├── test_core.py                # Kapsamlı birim testleri (CRC, FEC, Cipher, Frame)
@@ -482,10 +506,12 @@ kok-1976/
 │       ├── stress_mesh_network.py  # 5 düğümlü çok sıçramalı MANET mesh testi
 │       ├── stress_audio_vocoder.py # 16 kbps CVSD ve 150 Hz Goertzel susturma testi
 │       ├── stress_memory.py        # 100.000 çerçeveli O(1) bellek ve sızıntı testi
-│       └── stress_cyprus_1964.py   # 1964 Antalya-Kıbrıs troposferik yayılım modeli
+│       ├── stress_cyprus_1964.py   # 1964 Antalya-Kıbrıs troposferik yayılım modeli
+│       ├── stress_direction_finding.py # Watson-Watt RDF kerteriz ve üçgenleme testi
+│       └── stress_tdma_sync.py     # 64-slotluk TDMA ve Late-Net Entry testi
 ├── CMakeLists.txt                  # Modern ve taşınabilir CMake yapılandırması
 ├── Makefile                        # Bağımsız GNU / MinGW Make dosyası
-├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (8 Test)
+├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (10 Test)
 ├── LICENSE                         # Millî & Özgür Yazılım Lisans Sözleşmesi
 └── README.md                       # Bu doktrin ve mimari belgesi
 ```
@@ -494,7 +520,7 @@ kok-1976/
 
 ## 8. DOĞRULAMA VE STRES TESTİ SONUÇLARI
 
-Tüm modüller `python -s run_tests.py` komutuyla yürütülen 8 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
+Tüm modüller `python -s run_tests.py` komutuyla yürütülen 10 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
 
 ```text
 ============================================================================
@@ -502,16 +528,18 @@ Tüm modüller `python -s run_tests.py` komutuyla yürütülen 8 aşamalı ağı
 ============================================================================
 Modül / Test Adı                                        | Durum      | Süre  
 ----------------------------------------------------------------------------
-Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.27s
-Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.34s
-Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.30s
-İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.24s
-Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi            | BAŞARILI   |  0.08s
-Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma           | BAŞARILI   |  0.18s
+Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.20s
+Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.31s
+Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.25s
+İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.19s
+Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi            | BAŞARILI   |  0.06s
+Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma           | BAŞARILI   |  0.16s
 Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.44s
 1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.07s
+Radyo Yön Bulucu (RDF) & Hedef Kestirimi                | BAŞARILI   |  0.11s
+Taktik TDMA Veri Bağı & Late-Net Entry                  | BAŞARILI   |  0.07s
 ----------------------------------------------------------------------------
-Toplam Test Süresi: 1.91 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
+Toplam Test Süresi: 1.86 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
 ```
 
 ---

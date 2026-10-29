@@ -25,7 +25,9 @@ add_library(kok_core STATIC
     radio/audio/cvsd.cpp
     radio/audio/squelch.cpp
     radio/network/mesh_router.cpp
+    radio/network/tdma.cpp
     radio/sdr/dsp_filter.cpp
+    radio/sdr/direction_finder.cpp
 )
 
 target_include_directories(kok_core PUBLIC

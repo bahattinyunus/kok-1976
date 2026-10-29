@@ -39,6 +39,8 @@ TEST_SUITES = [
     ("Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma", ["python", "-s", "tests/stress/stress_audio_vocoder.py"]),
     ("Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)", ["python", "-s", "tests/stress/stress_memory.py"]),
     ("1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı", ["python", "-s", "tests/stress/stress_cyprus_1964.py"]),
+    ("Radyo Yön Bulucu (RDF) & Hedef Kestirimi", ["python", "-s", "tests/stress/stress_direction_finding.py"]),
+    ("Taktik TDMA Veri Bağı & Late-Net Entry", ["python", "-s", "tests/stress/stress_tdma_sync.py"]),
 ]
 
 

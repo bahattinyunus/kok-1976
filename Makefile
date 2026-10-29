@@ -15,7 +15,9 @@ SRCS = core/src/math.cpp \
        radio/audio/cvsd.cpp \
        radio/audio/squelch.cpp \
        radio/network/mesh_router.cpp \
-       radio/sdr/dsp_filter.cpp
+       radio/network/tdma.cpp \
+       radio/sdr/dsp_filter.cpp \
+       radio/sdr/direction_finder.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
