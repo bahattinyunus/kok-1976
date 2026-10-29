@@ -399,6 +399,31 @@ KÖK-1976 üç kademeli kalkan kullanır:
 
 ---
 
+### H. Taktik CVSD Ses Kodlayıcı (16 kbps Vocoder) ve 150 Hz Susturma
+
+Askerî telsizlerde ses iletimi sıfır gecikmeli olmalı ve %10'a varan kanal bit hatalarında bile sözcükler anlaşılır kalmalıdır:
+* **CVSD (Continuously Variable Slope Delta Modulation):** 16-bit PCM yerine her ses örneğini tek bir bitle (1-bit/örnek) kodlar. Eğim aşımı korumalı hece filtresi (syllabic filter) sayesinde gürültüde patlama yapmaz; NATO STANAG 4209 standardında taktik ses zırhı sunar.
+* **150 Hz Askerî Ton Susturma (Tone Squelch / CTCSS):** FM alıcılardaki yüksek hışırtıyı susturmak için Goertzel ayrık Fourier dönüşüm (DFT) algoritmasıyla 150 Hz pilot tonu $214\times$ seçicilikle ayrıştırır; yalnızca dost anons girdiğinde telsiz hoparlörünü açar.
+
+---
+
+### I. Taktik Ad-Hoc Mesh Ağ (MANET) ve Çok Sıçramalı Akıllı Röle
+
+1974 Beşparmak Dağları'nda yaşanan görüş hattı tıkanıklığını bertaraf eden, merkezi kule gerektirmeyen dağıtık telsiz ağı:
+* **Çok Sıçramalı İletim (Multi-Hop):** Dağın ardındaki piyade eri, vadideki zırhlı personel taşıyıcı ve tepe mevzisi üzerinden karargâha otomatik atlar.
+* **Döngü Önleme ve Dedüplikasyon (Zero-Heap Loop Avoidance):** Dönen halka önbelleğiyle daha önce görülmüş paketler milisaniyesinde yok edilir; fırtına (broadcast storm) engellenir.
+* **TTL (Time-To-Live):** Her telsiz rölesinde TTL düşürülerek paketlerin havada sonsuz dönmesi önlenir.
+
+---
+
+### J. SDR Sayısal Taban Bant Süzgeci (Kök Yükseltilmiş Kosinüs - RRC & NCO)
+
+Fiziksel radyo katmanında semboller arası girişimi (ISI) sıfıra indirmek ve spektral yayılımı daraltmak için sayısal sinyal işleme:
+* **31-Tap RRC Darbe Şekillendirici (Root-Raised Cosine):** Roll-off faktörü $\alpha = 0.35$ olan Nyquist süzgeciyle spektrum taşması önlenir.
+* **Sayısal Kontrollü Osilatör (NCO):** 32-bit faz akümülatörü ile frekans atlama adımları mikro-hertz hassasiyetinde üretilir.
+
+---
+
 ## 7. PROJE DİZİN ŞEMASI
 
 ```text
@@ -408,7 +433,9 @@ kok-1976/
 │   ├── kibris_1964_analizi.md      # Troposferik saçılma fiziği ve 1964 Antalya hattı
 │   ├── 4600_telsiz_mimarisi.md     # İlk yerli VHF telsizin blok şeması ve kart yapısı
 │   ├── aselsan_kurulus_kronolojisi.md # 1964-2000 Resmî ASELSAN kuruluş ve tarihçe kronolojisi
-│   └── elektronik_harp_doktrini.md # ECM, ECCM, Anti-Jamming ve taktik harp prensipleri
+│   ├── elektronik_harp_doktrini.md # ECM, ECCM, Anti-Jamming ve taktik harp prensipleri
+│   ├── taktik_vocoder_ve_ses_sikistirma.md # 16 kbps CVSD vocoder ve 150 Hz Goertzel susturma
+│   └── taktik_mesh_ve_rolemimarisi.md     # Dağlık saha MANET mesh ve çok sıçramalı röleleme
 ├── core/
 │   ├── include/kok/
 │   │   ├── types.hpp               # fp32_t Q16.16 sabit nokta ve deterministik tipler
@@ -425,6 +452,13 @@ kok-1976/
 │       ├── fec.cpp                 # Golay ve Hamming sendrom çözücüleri
 │       └── crypto.cpp              # LFSR adımlama, S-kutusu ve MAC hesabı
 ├── radio/
+│   ├── audio/
+│   │   ├── cvsd.hpp / cvsd.cpp     # 16 kbps CVSD taktik ses sıkıştırma ve hece süzgeci
+│   │   └── squelch.hpp / squelch.cpp # 150 Hz Goertzel DFT askerî CTCSS ton susturma
+│   ├── network/
+│   │   └── mesh_router.hpp / mesh_router.cpp # MANET çok sıçramalı röle ve dedüplikasyon
+│   ├── sdr/
+│   │   └── dsp_filter.hpp / dsp_filter.cpp   # 31-tap RRC darbe şekillendirici ve NCO
 │   ├── modulation/
 │   │   ├── fsk.hpp / fsk.cpp       # 2-FSK / GFSK modülatör ve FM diskriminatör
 │   │   ├── fhss.hpp / fhss.cpp     # 64-kanallı FHSS ve adaptif kara liste motoru
@@ -435,6 +469,8 @@ kok-1976/
 │       ├── frame.hpp / frame.cpp   # 0x1976KOK çerçeve serileştirme ve doğrulama
 │       ├── protocol.hpp / protocol.cpp # Akış ayrıştırıcı durum makinesi (Stream Receiver)
 │       └── telemetry.py            # Çift yönlü taktik paket ayrıştırıcı ve logger
+├── cli/
+│   └── taktik_komuta.py            # İnteraktif taktik harekât ve muhabere konsolu
 ├── tests/
 │   ├── kok_core.py                 # C++ çekirdeği ile bit uyumlu Python referansı
 │   ├── test_core.py                # Kapsamlı birim testleri (CRC, FEC, Cipher, Frame)
@@ -443,11 +479,13 @@ kok-1976/
 │       ├── stress_noise.py         # -2 dB ila +10 dB SNR AWGN stres testi
 │       ├── stress_jamming.py       # Baraj, süpürme ve takipçi karıştırıcı testi
 │       ├── stress_ew_complex.py    # DSSS -6dB SNR ve Anti-Spoofing / Replay testi
+│       ├── stress_mesh_network.py  # 5 düğümlü çok sıçramalı MANET mesh testi
+│       ├── stress_audio_vocoder.py # 16 kbps CVSD ve 150 Hz Goertzel susturma testi
 │       ├── stress_memory.py        # 100.000 çerçeveli O(1) bellek ve sızıntı testi
 │       └── stress_cyprus_1964.py   # 1964 Antalya-Kıbrıs troposferik yayılım modeli
 ├── CMakeLists.txt                  # Modern ve taşınabilir CMake yapılandırması
 ├── Makefile                        # Bağımsız GNU / MinGW Make dosyası
-├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (6 Test)
+├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (8 Test)
 ├── LICENSE                         # Millî & Özgür Yazılım Lisans Sözleşmesi
 └── README.md                       # Bu doktrin ve mimari belgesi
 ```
@@ -456,7 +494,7 @@ kok-1976/
 
 ## 8. DOĞRULAMA VE STRES TESTİ SONUÇLARI
 
-Tüm modüller `python -s run_tests.py` komutuyla yürütülen 6 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
+Tüm modüller `python -s run_tests.py` komutuyla yürütülen 8 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
 
 ```text
 ============================================================================
@@ -464,14 +502,16 @@ Tüm modüller `python -s run_tests.py` komutuyla yürütülen 6 aşamalı ağı
 ============================================================================
 Modül / Test Adı                                        | Durum      | Süre  
 ----------------------------------------------------------------------------
-Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.29s
-Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.41s
-Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.36s
+Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.27s
+Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.34s
+Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.30s
 İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.24s
-Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.50s
-1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.09s
+Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi            | BAŞARILI   |  0.08s
+Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma           | BAŞARILI   |  0.18s
+Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.44s
+1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.07s
 ----------------------------------------------------------------------------
-Toplam Test Süresi: 1.88 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
+Toplam Test Süresi: 1.91 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
 ```
 
 ---
@@ -543,8 +583,18 @@ Yabancı uzmanların "fiziken imkânsız" dediği Antalya - Beşparmak Dağları
 ### Testleri Çalıştırma
 
 ```bash
-# Tüm test bataryasını (Birim, Stres, Gürültü, EW, Kıbrıs) koştur:
+# Tüm test bataryasını (8 Test: Birim, Stres, Gürültü, EW, Mesh, CVSD, Kıbrıs) koştur:
 python run_tests.py
+```
+
+### İnteraktif Taktik Komuta Konsolu (CLI Demo)
+
+```bash
+# Macunköy HQ, Beşparmak ve Toroslar hattı canlı harekât simülasyonu:
+python cli/taktik_komuta.py --demo
+
+# veya interaktif konsol modu:
+python cli/taktik_komuta.py
 ```
 
 ### C++ Projesini Derleme

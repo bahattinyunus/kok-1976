@@ -16,6 +16,10 @@
 #include "dsss.hpp"
 #include "frame.hpp"
 #include "protocol.hpp"
+#include "cvsd.hpp"
+#include "squelch.hpp"
+#include "mesh_router.hpp"
+#include "dsp_filter.hpp"
 
 using namespace kok;
 using namespace kok::radio;
@@ -212,6 +216,56 @@ void test_telemetry_and_stream() {
     assert(std::memcmp(rx_frame.payload(), payload, rx_frame.payload_length()) == 0);
 }
 
+void test_audio_dsp_and_mesh() {
+    std::cout << "[+] Test Ediliyor: CVSD Ses Kodlayıcı, 150 Hz Squelch, RRC ve Mesh Router..." << std::endl;
+
+    // 1. CVSD Kodlama ve Çözme
+    cvsd_codec codec;
+    const i16 test_pcm[16] = {0, 1000, 2500, 5000, 8000, 10000, 8000, 5000, 2000, 0, -2000, -5000, -8000, -5000, -2000, 0};
+    u8 cvsd_bytes[4] = {0};
+    usize encoded_bytes = codec.encode_pcm_buffer(test_pcm, 16, cvsd_bytes, sizeof(cvsd_bytes));
+    assert(encoded_bytes == 2);
+
+    codec.reset();
+    i16 decoded_pcm[16] = {0};
+    usize decoded_samples = codec.decode_cvsd_buffer(cvsd_bytes, 2, decoded_pcm, 16);
+    assert(decoded_samples == 16);
+
+    // 2. 150 Hz Susturma ve Gürültü Süzgeci
+    squelch_detector squelch;
+    i16 tone_block[64];
+    for (usize i = 0; i < 64; ++i) {
+        tone_block[i] = static_cast<i16>((i % 2 == 0) ? 5000 : -5000);
+    }
+    squelch.process_block(tone_block, 64);
+    assert(squelch.noise_energy() >= 0);
+
+    // 3. DSP RRC Süzgeci ve NCO Osilatör
+    i16 rrc_in[32] = {0};
+    rrc_in[0] = 10000; // Dürtü (Impulse)
+    i16 rrc_out[32] = {0};
+    dsp_filter::apply_fir_filter(rrc_in, 32, rrc_out);
+
+    dsp_filter::nco_state nco;
+    nco.configure(1000.0f, 48000.0f);
+    fp32_t nco_cos, nco_sin;
+    nco.step(nco_cos, nco_sin);
+
+    // 4. Mesh Router Yönlendirme Testi
+    mesh_router router_node2(2); // Düğüm ID: 2 (Toroslar Rölesi)
+    router_node2.update_route(5, 5, 1, 90, 1000); // 5'e (Erenköy) doğrudan sekme
+
+    tactical_frame pkt_to_5;
+    pkt_to_5.set_header(3, 1, 5, 42, 0); // 1'den (Macunköy) 5'e
+    u8 payload[] = "TALIMAT: SIPER";
+    pkt_to_5.set_payload(payload, sizeof(payload) - 1);
+
+    tactical_frame fwd_pkt;
+    u8 route_result = router_node2.process_incoming_frame(pkt_to_5, fwd_pkt);
+    assert(route_result == 1); // Başarıyla yönlendirildi (Forward)
+    assert(fwd_pkt.header().target_id == 5);
+}
+
 int main() {
     std::cout << "============================================================" << std::endl;
     std::cout << "  KOK-1976 C++ CEKIRDEK BIRIM VE DOKTRIN TESTLERI (C++17)   " << std::endl;
@@ -222,6 +276,7 @@ int main() {
     test_crc_and_fec();
     test_crypto_and_fhss();
     test_telemetry_and_stream();
+    test_audio_dsp_and_mesh();
 
     std::cout << "============================================================" << std::endl;
     std::cout << "  TUM C++ CEKIRDEK TESTLERI BASARIYLA TAMAMLANDI! (OK)      " << std::endl;

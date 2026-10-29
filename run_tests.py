@@ -9,6 +9,12 @@ import os
 import subprocess
 import time
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 BANNER = r"""
                        _____________________________
                       |                             |
@@ -29,6 +35,8 @@ TEST_SUITES = [
     ("Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)", ["python", "-s", "tests/stress/stress_noise.py"]),
     ("Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)", ["python", "-s", "tests/stress/stress_jamming.py"]),
     ("İleri Düzey EH, DSSS & Anti-Spoofing Savunması", ["python", "-s", "tests/stress/stress_ew_complex.py"]),
+    ("Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi", ["python", "-s", "tests/stress/stress_mesh_network.py"]),
+    ("Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma", ["python", "-s", "tests/stress/stress_audio_vocoder.py"]),
     ("Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)", ["python", "-s", "tests/stress/stress_memory.py"]),
     ("1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı", ["python", "-s", "tests/stress/stress_cyprus_1964.py"]),
 ]

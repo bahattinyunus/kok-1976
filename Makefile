@@ -2,7 +2,7 @@
 # (Harici Bağımlılık Yoktur - Sadece C++17 Derleyicisi)
 
 CXX ?= g++
-CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2 -Icore/include -Iradio/modulation -Iradio/telemetry
+CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2 -Icore/include -Iradio/modulation -Iradio/telemetry -Iradio/audio -Iradio/network -Iradio/sdr
 
 SRCS = core/src/math.cpp \
        core/src/fec.cpp \
@@ -11,7 +11,11 @@ SRCS = core/src/math.cpp \
        radio/modulation/fhss.cpp \
        radio/modulation/dsss.cpp \
        radio/telemetry/frame.cpp \
-       radio/telemetry/protocol.cpp
+       radio/telemetry/protocol.cpp \
+       radio/audio/cvsd.cpp \
+       radio/audio/squelch.cpp \
+       radio/network/mesh_router.cpp \
+       radio/sdr/dsp_filter.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

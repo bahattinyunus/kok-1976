@@ -22,12 +22,19 @@ add_library(kok_core STATIC
     radio/modulation/dsss.cpp
     radio/telemetry/frame.cpp
     radio/telemetry/protocol.cpp
+    radio/audio/cvsd.cpp
+    radio/audio/squelch.cpp
+    radio/network/mesh_router.cpp
+    radio/sdr/dsp_filter.cpp
 )
 
 target_include_directories(kok_core PUBLIC
     core/include
     radio/modulation
     radio/telemetry
+    radio/audio
+    radio/network
+    radio/sdr
 )
 
 # C++ Test Koşturucusu
