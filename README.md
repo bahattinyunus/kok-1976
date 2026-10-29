@@ -123,6 +123,12 @@ Fakat ortada sadece tüzük, birkaç tahta sandalye ve bir miktar para vardı. N
 
 ## 2. 1976: BİR EFSANENİN BAŞLANGICI VE MEHMET HÂCİM KAMOY
 
+<p align="center">
+  <img src="assets/kok1976_kamoy_macunkoy.jpg" alt="1976 Macunköy ve Mehmet Hâcim Kamoy" width="850"/>
+  <br>
+  <em><strong>1976 Macunköy Doğuşu:</strong> Mehmet Hâcim Kamoy ve ODTÜ/İTÜ mezunu ilk mühendis kadrosu, ilk millî telsiz şemaları ve analog osiloskoplar başında.</em>
+</p>
+
 ### Kurucu Genel Müdürün Göreve Çağrılması
 
 1976 yılının başında, ASELSAN Yönetim Kurulu bu devasa görevi kime teslim edeceğini ararken tek bir isim öne çıkıyordu: **Mehmet Hâcim Kamoy**.
@@ -160,6 +166,12 @@ O sırada TRT Teknik Daire Başkanı olan Hâcim Kamoy, masasına konan raporlar
 
 Kamoy ve çekirdek mühendis ekibi gizlice Antalya’ya gitti. Sahil şeridinde kurdukları modifiye yönlü anten sistemleri (4 elemanlı istiflenmiş Yagi faz dizisi) ve özel frekans modülasyonu sayesinde sinyali Akdeniz üzerinden aşırarak adaya ulaştırdılar. Kıbrıs semalarında yankılanan ilk Türkçe anons ve şifreli emirler, yabancı uzmanların "fiziken imkânsız" dediği o gizli istasyon üzerinden mücahitlerin siperlerine ulaştı.
 
+<p align="center">
+  <img src="assets/kibris_1964_troposferik_hat.jpg" alt="1964 Kıbrıs Gizli Troposferik Hat" width="850"/>
+  <br>
+  <em><strong>1964 Toroslar - Akdeniz - Kıbrıs Ufuk Ötesi Yayılımı:</strong> Antalya sahilindeki gizli istasyondan Erenköy mevzilerine troposferik saçılma ve buhar kanalı ile ulaştırılan millî muhabere hattı.</em>
+</p>
+
 ---
 
 ### B. Eşek Arısının Paradoksu: Macunköy'deki Tarihi Konuşma
@@ -177,6 +189,12 @@ Hâcim Kamoy, genç kadroyu yemekhanede etrafına topladı ve çalışma masası
 > *...Evlatlarım! Size 'Siz Türk mühendislerisiniz, bunu yapamazsınız, lisans alalım, parçaları dışarıdan getirelim, montaj yapalım' diyenler çıkacak. Bürokrasi önünüze duvar örecek, yabancı firmalar fiyat kırıp sizi batırmaya çalışacak. Siz o aerodinamik bilmeyen eşek arıları gibi olacaksınız. Kâğıt üzerindeki imkânsızlıkları dinlemeyecek, uçacaksınız!"*
 
 Bu konuşmanın ardından mühendisler gece gündüz Macunköy'de sabahladı. 1979 yılında, Türkiye'nin ilk özgün tasarım sırt ve araç telsizi olan **ASELSAN 4600 Serisi VHF/FM Taktik Telsizleri** banttan indi. Türk ordusu, yabancı kriptolardan ve ambargolardan arındırılmış kendi milli haberleşme omurgasına kavuştu.
+
+<p align="center">
+  <img src="assets/taktik_telsiz_4600.jpg" alt="ASELSAN 4600 Taktik Telsiz Mimarisi" width="850"/>
+  <br>
+  <em><strong>ASELSAN 4600 Serisi Taktik Telsiz Mimarisi:</strong> Modüler tak-çıkar kartlar, dayanıklı döküm gövde ve düşman karıştırmasına meydan okuyan frekans atlama spektrumu.</em>
+</p>
 
 ---
 
