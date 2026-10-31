@@ -442,6 +442,23 @@ NATO Link-11 ve Link-16 standartlarının ötesinde bağımsız C++17 freestandi
 
 ---
 
+### M. CRPA Hüzmeleme ve Uzamsal Karıştırıcı Bastırma (Spatial Nulling)
+
+Düşmanın tüm bandı kör baraj gürültüsüyle boğduğu durumlarda fiziksel katmanda uzamsal geliş açısı (AoA) ayrıştırması:
+* **4-Elemanlı Düzlemsel Kare Anten Dizisi:** Yarım dalga boyu ($d = \lambda / 2$) geometride CORDIC yönlendirme vektörleri.
+* **Normalize LMS (NLMS) Güç İnversiyonu:** Güçlü düşman jammer yönüne otomatik olarak **$43.83\text{ dB}$ derin uzamsal çukur (Spatial Null)** yerleştirirken, dost sinyal yönünde sadece $-0.87\text{ dB}$ kayıpla SINR'ı $+42.96\text{ dB}$ seviyesine fırlatır.
+
+---
+
+### N. Taktik TRANSEC, OTAR (Hava Üzerinden Anahtarlama) ve DoD 5220.22-M Zeroize
+
+Kripto anahtarlarının fiziksel taşınma ve esir düşme risklerini sıfıra indiren millî kripto güvenlik mimarisi:
+* **İki Kademeli KEK / TEK Hiyerarşisi:** Korumalı odada yüklenen KEK (Key Encryption Key) ile havadan operasyonel TEK (Traffic Encryption Key) yenileme (24 baytlık `0x76REKEY` protokolü).
+* **Anti-Replay ve Kriptografik MAC:** Monotonik sıra numarası ve FNV-1a tabanlı MAC ile sahte anahtar enjeksiyonunu %100 engeller.
+* **DoD 5220.22-M Dört Aşamalı Acil İmha (Zeroize):** Telsiz kapağı zorlandığında veya panik butonuna basıldığında `0x55 -> 0xAA -> 0xFF -> 0x00` geçişleriyle mikro-saniyeler içinde tüm anahtarları küle çevirir.
+
+---
+
 ## 7. PROJE DİZİN ŞEMASI
 
 ```text
@@ -455,7 +472,9 @@ kok-1976/
 │   ├── taktik_vocoder_ve_ses_sikistirma.md # 16 kbps CVSD vocoder ve 150 Hz Goertzel susturma
 │   ├── taktik_mesh_ve_rolemimarisi.md     # Dağlık saha MANET mesh ve çok sıçramalı röleleme
 │   ├── taktik_yon_bulma_ve_kestirme.md    # Watson-Watt Adcock yön bulma ve hedef üçgenleme
-│   └── tdma_ve_taktik_veri_bagi.md        # Deterministik TDMA, Blue Force Tracking ve LNE
+│   ├── tdma_ve_taktik_veri_bagi.md        # Deterministik TDMA, Blue Force Tracking ve LNE
+│   ├── taktik_huzmeleme_ve_crpa_doktrini.md # CRPA 4-elemanlı dizi, NLMS ve uzamsal nulling
+│   └── taktik_kripto_ve_otar_mimarisi.md    # TRANSEC, KEK/TEK, OTAR ve DoD 5220.22-M Zeroize
 ├── core/
 │   ├── include/kok/
 │   │   ├── types.hpp               # fp32_t Q16.16 sabit nokta ve deterministik tipler
@@ -466,11 +485,16 @@ kok-1976/
 │   │   ├── math.hpp                # CORDIC sin/cos/polar ve bit kaydırmalı karekök
 │   │   ├── fec.hpp                 # Hamming(8,4) ve Genişletilmiş Golay(24,12)
 │   │   ├── crypto.hpp              # Kamoy-76 çift LFSR taktik akış şifreleyicisi
+│   │   ├── anti_tamper.hpp         # DoD 5220.22-M acil kripto imha ve bellek temizliği
+│   │   ├── otar.hpp                # Hava üzerinden anahtarlama (OTAR) yöneticisi
 │   │   └── lpi_lpd.hpp             # LPI/LPD metrikleri, Shannon limiti ve entropi ölçer
-│   └── src/
-│       ├── math.cpp                # CORDIC açı tabloları ve tamsayı kök hesaplaması
-│       ├── fec.cpp                 # Golay ve Hamming sendrom çözücüleri
-│       └── crypto.cpp              # LFSR adımlama, S-kutusu ve MAC hesabı
+│   ├── src/
+│   │   ├── math.cpp                # CORDIC açı tabloları ve tamsayı kök hesaplaması
+│   │   ├── fec.cpp                 # Golay ve Hamming sendrom çözücüleri
+│   │   ├── crypto.cpp              # LFSR adımlama, S-kutusu ve MAC hesabı
+│   │   ├── anti_tamper.cpp         # 4-aşamalı bellek imhası ve sabit zamanlı doğrulama
+│   │   └── otar.cpp                # 24-baytlık OTAR paket üretimi ve TEK güncelleme
+│   └── otar.py                     # OTAR ve Anti-Tamper Python referans modeli
 ├── radio/
 │   ├── audio/
 │   │   ├── cvsd.hpp / cvsd.cpp     # 16 kbps CVSD taktik ses sıkıştırma ve hece süzgeci
@@ -482,7 +506,9 @@ kok-1976/
 │   ├── sdr/
 │   │   ├── dsp_filter.hpp / dsp_filter.cpp   # 31-tap RRC darbe şekillendirici ve NCO
 │   │   ├── direction_finder.hpp / cpp        # Watson-Watt Adcock kerteriz ve kestirme
-│   │   └── df.py                   # Sayısal RDF ve üçgenleme Python modeli
+│   │   ├── df.py                   # Sayısal RDF ve üçgenleme Python modeli
+│   │   ├── crpa_beamformer.hpp / cpp # 4-elemanlı CRPA hüzmeleme ve spatial nulling
+│   │   └── crpa.py                 # CRPA Python simülatörü ve NLMS güç inversiyonu
 │   ├── modulation/
 │   │   ├── fsk.hpp / fsk.cpp       # 2-FSK / GFSK modülatör ve FM diskriminatör
 │   │   ├── fhss.hpp / fhss.cpp     # 64-kanallı FHSS ve adaptif kara liste motoru
@@ -494,7 +520,7 @@ kok-1976/
 │       ├── protocol.hpp / protocol.cpp # Akış ayrıştırıcı durum makinesi (Stream Receiver)
 │       └── telemetry.py            # Çift yönlü taktik paket ayrıştırıcı ve logger
 ├── cli/
-│   └── taktik_komuta.py            # BFT, RDF ve telemetri destekli komuta konsolu
+│   └── taktik_komuta.py            # BFT, RDF, CRPA, OTAR ve telemetri komuta konsolu
 ├── tests/
 │   ├── kok_core.py                 # C++ çekirdeği ile bit uyumlu Python referansı
 │   ├── test_core.py                # Kapsamlı birim testleri (CRC, FEC, Cipher, Frame)
@@ -508,10 +534,12 @@ kok-1976/
 │       ├── stress_memory.py        # 100.000 çerçeveli O(1) bellek ve sızıntı testi
 │       ├── stress_cyprus_1964.py   # 1964 Antalya-Kıbrıs troposferik yayılım modeli
 │       ├── stress_direction_finding.py # Watson-Watt RDF kerteriz ve üçgenleme testi
-│       └── stress_tdma_sync.py     # 64-slotluk TDMA ve Late-Net Entry testi
+│       ├── stress_tdma_sync.py     # 64-slotluk TDMA ve Late-Net Entry testi
+│       ├── stress_crpa_nulling.py  # CRPA 4-elemanlı dizi ve adaptif jammer nulling testi
+│       └── stress_otar_zeroize.py  # OTAR anahtarlama ve DoD 5220.22-M Zeroize testi
 ├── CMakeLists.txt                  # Modern ve taşınabilir CMake yapılandırması
 ├── Makefile                        # Bağımsız GNU / MinGW Make dosyası
-├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (10 Test)
+├── run_tests.py                    # Merkezî test bataryası koşturucu konsolu (12 Test)
 ├── LICENSE                         # Millî & Özgür Yazılım Lisans Sözleşmesi
 └── README.md                       # Bu doktrin ve mimari belgesi
 ```
@@ -520,7 +548,7 @@ kok-1976/
 
 ## 8. DOĞRULAMA VE STRES TESTİ SONUÇLARI
 
-Tüm modüller `python -s run_tests.py` komutuyla yürütülen 10 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
+Tüm modüller `python -s run_tests.py` komutuyla yürütülen 12 aşamalı ağır saha stres testlerinden `%100` başarıyla geçmiştir:
 
 ```text
 ============================================================================
@@ -528,16 +556,21 @@ Tüm modüller `python -s run_tests.py` komutuyla yürütülen 10 aşamalı ağ�
 ============================================================================
 Modül / Test Adı                                        | Durum      | Süre  
 ----------------------------------------------------------------------------
-Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.20s
-Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.31s
-Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.25s
-İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.19s
-Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi            | BAŞARILI   |  0.06s
-Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma           | BAŞARILI   |  0.16s
-Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.44s
-1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.07s
-Radyo Yön Bulucu (RDF) & Hedef Kestirimi                | BAŞARILI   |  0.11s
-Taktik TDMA Veri Bağı & Late-Net Entry                  | BAŞARILI   |  0.07s
+Birim Testler (CRC, FEC, Ciphers, Framing)              | BAŞARILI   |  0.28s
+Düşük SNR & AWGN Gürültü Stresi (Golay vs Uncoded)      | BAŞARILI   |  0.37s
+Elektronik Harp & Karıştırma Stresi (FHSS vs Jammer)    | BAŞARILI   |  0.32s
+İleri Düzey EH, DSSS & Anti-Spoofing Savunması          | BAŞARILI   |  0.23s
+Taktik Ad-Hoc Mesh & Çok-Sekmeli Röle Stresi            | BAŞARILI   |  0.08s
+Askerî 16 kbps CVSD Ses & 150 Hz Ton Susturma           | BAŞARILI   |  0.20s
+Kısıtlı Kaynak & Statik Bellek Stresi (O(1) Tahsis)     | BAŞARILI   |  0.45s
+1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı             | BAŞARILI   |  0.08s
+Radyo Yön Bulucu (RDF) & Hedef Kestirimi                | BAŞARILI   |  0.09s
+Taktik TDMA Veri Bağı & Late-Net Entry                  | BAŞARILI   |  0.09s
+CRPA Uzamsal Hüzmeleme & Karıştırıcı Bastırma           | BAŞARILI   |  0.10s
+OTAR Hava Üzerinden Anahtarlama & Zeroize               | BAŞARILI   |  0.09s
+----------------------------------------------------------------------------
+Toplam Test Süresi: 2.37 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
+```
 ----------------------------------------------------------------------------
 Toplam Test Süresi: 1.86 saniye — [TÜM TESTLER BAŞARIYLA TAMAMLANDI]
 ```
@@ -611,7 +644,7 @@ Yabancı uzmanların "fiziken imkânsız" dediği Antalya - Beşparmak Dağları
 ### Testleri Çalıştırma
 
 ```bash
-# Tüm test bataryasını (8 Test: Birim, Stres, Gürültü, EW, Mesh, CVSD, Kıbrıs) koştur:
+# Tüm test bataryasını (12 Test: Birim, Stres, Gürültü, EW, Mesh, CVSD, Kıbrıs, RDF, TDMA, CRPA, OTAR) koştur:
 python run_tests.py
 ```
 

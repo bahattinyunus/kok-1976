@@ -211,3 +211,17 @@ class KamoyCipher:
         for i in range(len(out)):
             out[i] ^= self.next_byte()
         return bytes(out)
+
+    @staticmethod
+    def calculate_mac(key: int, data: bytes) -> int:
+        h = 0x811C9DC5
+        k0 = key & 0xFFFFFFFF
+        k1 = (key >> 32) & 0xFFFFFFFF
+
+        h = ((h ^ k0) * 0x01000193) & 0xFFFFFFFF
+        for b in data:
+            h = ((h ^ b) * 0x01000193) & 0xFFFFFFFF
+            h = (((h << 13) | (h >> 19)) & 0xFFFFFFFF)
+
+        h = ((h ^ k1) * 0x01000193) & 0xFFFFFFFF
+        return h

@@ -7,6 +7,8 @@ CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -O2 -Icore/include -Iradio/modul
 SRCS = core/src/math.cpp \
        core/src/fec.cpp \
        core/src/crypto.cpp \
+       core/src/anti_tamper.cpp \
+       core/src/otar.cpp \
        radio/modulation/fsk.cpp \
        radio/modulation/fhss.cpp \
        radio/modulation/dsss.cpp \
@@ -17,7 +19,8 @@ SRCS = core/src/math.cpp \
        radio/network/mesh_router.cpp \
        radio/network/tdma.cpp \
        radio/sdr/dsp_filter.cpp \
-       radio/sdr/direction_finder.cpp
+       radio/sdr/direction_finder.cpp \
+       radio/sdr/crpa_beamformer.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

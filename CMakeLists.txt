@@ -17,6 +17,8 @@ add_library(kok_core STATIC
     core/src/math.cpp
     core/src/fec.cpp
     core/src/crypto.cpp
+    core/src/anti_tamper.cpp
+    core/src/otar.cpp
     radio/modulation/fsk.cpp
     radio/modulation/fhss.cpp
     radio/modulation/dsss.cpp
@@ -28,6 +30,7 @@ add_library(kok_core STATIC
     radio/network/tdma.cpp
     radio/sdr/dsp_filter.cpp
     radio/sdr/direction_finder.cpp
+    radio/sdr/crpa_beamformer.cpp
 )
 
 target_include_directories(kok_core PUBLIC

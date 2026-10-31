@@ -41,6 +41,8 @@ TEST_SUITES = [
     ("1964 Kıbrıs Troposferik Ufuk Ötesi Yayılımı", ["python", "-s", "tests/stress/stress_cyprus_1964.py"]),
     ("Radyo Yön Bulucu (RDF) & Hedef Kestirimi", ["python", "-s", "tests/stress/stress_direction_finding.py"]),
     ("Taktik TDMA Veri Bağı & Late-Net Entry", ["python", "-s", "tests/stress/stress_tdma_sync.py"]),
+    ("CRPA Uzamsal Hüzmeleme & Karıştırıcı Bastırma", ["python", "-s", "tests/stress/stress_crpa_nulling.py"]),
+    ("OTAR Hava Üzerinden Anahtarlama & Zeroize", ["python", "-s", "tests/stress/stress_otar_zeroize.py"]),
 ]
 
 

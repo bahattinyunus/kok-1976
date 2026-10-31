@@ -22,6 +22,9 @@
 #include "dsp_filter.hpp"
 #include "direction_finder.hpp"
 #include "tdma.hpp"
+#include "kok/anti_tamper.hpp"
+#include "kok/otar.hpp"
+#include "crpa_beamformer.hpp"
 
 using namespace kok;
 using namespace kok::radio;
@@ -320,6 +323,54 @@ void test_rdf_and_tdma() {
     assert(!scheduler.validate_slot_ingress(9)); // 9. düğüm konuşamaz
 }
 
+void test_anti_tamper_otar_crpa() {
+    std::cout << "[+] Test Ediliyor: Anti-Tamper Zeroize, OTAR Rekeying ve CRPA Hüzmeleme..." << std::endl;
+
+    // 1. Anti-Tamper Güvenli Silme (DoD 5220.22-M)
+    u8 secret_buf[32];
+    std::memset(secret_buf, 0xA5, sizeof(secret_buf));
+    anti_tamper::secure_wipe(secret_buf, sizeof(secret_buf));
+    assert(anti_tamper::verify_clean(secret_buf, sizeof(secret_buf)));
+
+    // 2. OTAR Anahtar Yenileme ve Doğrulama
+    u64 master_kek = 0x1976A5A51976A5A5ULL;
+    otar_manager hq(master_kek);
+    otar_manager radio(master_kek);
+
+    otar_message msg;
+    u64 new_tek = 0x4600BEEFDEADBEEFULL;
+    bool create_ok = hq.create_rekey_packet(new_tek, 101, 1, 0x00010001, msg);
+    assert(create_ok);
+
+    bool proc_ok = radio.process_rekey_packet(msg);
+    assert(proc_ok);
+    assert(radio.get_active_tek() == new_tek);
+    assert(radio.get_active_key_id() == 101);
+
+    // Replay saldırısı testi (Aynı sıra no reddedilmeli)
+    assert(!radio.process_rekey_packet(msg));
+
+    // Acil Kripto İmha (Zeroize)
+    radio.emergency_zeroize(TamperSource::CHASSIS_INTRUSION, 197600);
+    assert(radio.get_tamper_unit().is_zeroized());
+    assert(radio.get_active_tek() == 0);
+    assert(!radio.is_operational());
+
+    // 3. CRPA Hüzmeleme ve Karıştırıcı Bastırma
+    crpa_beamformer bf;
+    bf.steer_beam(fp32_t::from_float(0.0f)); // 0 dereceye yönlendir
+    fp32_t gain_0 = bf.calculate_array_gain_db(fp32_t::from_float(0.0f));
+    assert(gain_0.to_float() > 0.0f); // Ana hüzmede pozitif kazanç
+
+    // NLMS karıştırıcı bastırma adımı
+    crpa_beamformer::antenna_snapshot snap;
+    for (usize m = 0; m < crpa_beamformer::NUM_ELEMENTS; ++m) {
+        snap.elements[m] = crpa_beamformer::complex_fp(fp32_t::from_float(10.0f), fp32_t::from_float(5.0f));
+    }
+    crpa_beamformer::complex_fp y = bf.process_sample(snap);
+    assert(y.r.raw != 0 || y.i.raw != 0);
+}
+
 int main() {
     std::cout << "============================================================" << std::endl;
     std::cout << "  KOK-1976 C++ CEKIRDEK BIRIM VE DOKTRIN TESTLERI (C++17)   " << std::endl;
@@ -332,6 +383,7 @@ int main() {
     test_telemetry_and_stream();
     test_audio_dsp_and_mesh();
     test_rdf_and_tdma();
+    test_anti_tamper_otar_crpa();
 
     std::cout << "============================================================" << std::endl;
     std::cout << "  TUM C++ CEKIRDEK TESTLERI BASARIYLA TAMAMLANDI! (OK)      " << std::endl;

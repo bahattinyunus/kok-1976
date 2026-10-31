@@ -21,6 +21,8 @@ from radio.telemetry.telemetry import TacticalFrame, StreamReceiver
 from radio.modulation.dsss import DSSSEngine
 from radio.sdr.df import WatsonWattDirectionFinder
 from radio.network.tactical_link import TacticalDataLinkNetwork
+from radio.sdr.crpa import CRPABeamformerPy
+from core.otar import OTARManager
 
 
 BANNER = r"""
@@ -116,6 +118,33 @@ def run_demo():
     print(f"[*] Slot Çatışması (Collisions): {sim_res['collisions']} (Sıfır Çatışma Determinizmi)")
     for nid, bft in sim_res['bft_map'].items():
         print(f"    [BFT MEVZİ] {bft['callsign']:22s} -> X={bft['pos_x']:4.1f}km, Y={bft['pos_y']:4.1f}km | Yakıt=%{bft['fuel']} Mühimmat=%{bft['ammo']}")
+
+    print("\n>>> SENARYO 6: CRPA Hüzmeleme & Düşman Jammer Bastırma (Spatial Nulling)...")
+    crpa = CRPABeamformerPy(mu=0.1)
+    sv_d = crpa.steering_vector(0.0)
+    sv_j = crpa.steering_vector(45.0)
+    for k in range(200):
+        s_d = 1.0 if (k % 20 < 10) else -1.0
+        s_j = 20.0 * (1.0 if (k % 2 == 0) else -1.0)
+        snap = [s_d * sv_d[m] + s_j * sv_j[m] for m in range(4)]
+        crpa.process_sample(snap)
+    g_des = crpa.calculate_array_gain_db(0.0)
+    g_jam = crpa.calculate_array_gain_db(45.0)
+    print(f"[*] Düşman Jammer Açısı (45°): Bastırma Kazancı = {g_jam:.1f} dB (Derin Null)")
+    print(f"[*] Dost Telsiz Açısı   (00°): Kalan Sinyal     = {g_des:.1f} dB")
+    print(f"[+] Çıkış SINR İyileşmesi    : +{g_des - g_jam:.1f} dB (Sinyal Düşman Gürültüsünden Kurtarıldı)")
+
+    print("\n>>> SENARYO 7: OTAR Havadan Anahtarlama & Anti-Tamper Acil İmha (Zeroize)...")
+    otar_hq = OTARManager(0x1976A5A51976A5A5)
+    otar_field = OTARManager(0x1976A5A51976A5A5)
+    rekey_pkt = otar_hq.create_rekey_packet(0x4600CAFE1976BEEF, key_id=77, sequence_num=1, iv=0x42)
+    otar_field.process_rekey_packet(rekey_pkt)
+    print(f"[*] Karargâh OTAR Paketi Havadan Gönderildi (24 Bayt)")
+    print(f"[+] Telsiz Yeni Trafik Anahtarını Aktif Etti: 0x{otar_field.active_tek:016X}")
+    print("[!] Telsiz Esir Düşme Tehlikesinde! Acil Sıfırlama Butonuna Basıldı (Zeroize)...")
+    otar_field.emergency_zeroize("EMERGENCY_BUTTON", 197610)
+    print(f"[+] DoD 5220.22-M 4 Geçişli Kripto İmhası Yapıldı: KEK={otar_field.kek}, TEK={otar_field.active_tek}")
+    print("[+] Telsiz Kriptografik Olarak Sıfırlandı; Düşman Hiçbir Veriyi Kurtaramaz!")
 
     print("\n" + "=" * 76)
     print("  [DEMO TAMAMLANDI] KÖK-1976 Taktik Muhabere Sistemi Harbe Hazır!")
